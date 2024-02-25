@@ -1,0 +1,56 @@
+name: Update keys
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: Update keys
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.2
+
+      - name: Setup NodeJS environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Get keys
+        run: pnpm getkeys
+
+      - name: Checkout keys branch
+        uses: actions/checkout@v4
+        with:
+          ref: keys
+          path: key_repo
+
+      - name: Update key if it differs
+        run: |
+          file=keys.json
+          cd key_repo
+          echo "Old -> $(cat $file) || New -> $(cat ../$file)"
+          if [[ "$(cat $file)" != "$(cat ../$file)" ]]; then
+            cp ../$file .
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add $file
+            git commit --amend -m "chore: Updating key"
+            git push --force
+          fi

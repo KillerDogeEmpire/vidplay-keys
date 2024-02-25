@@ -1,0 +1,16 @@
+{
+  "name": "worstsource-keys",
+  "version": "1.0.0",
+  "description": "I hate the antichrist",
+  "main": "index.mjs",
+  "scripts": {
+    "getkeys": "node index.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "deobfuscator": "2.4.3",
+    "webcrack": "^2.10.0"
+  }
+}
