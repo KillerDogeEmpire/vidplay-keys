@@ -2,7 +2,7 @@ name: Update keys
 
 on:
   schedule:
-    - cron: "57 * * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -41,39 +41,16 @@ jobs:
           ref: keys
           path: key_repo
 
-      - name: Update key if it differs or create if missing
+      - name: Update key if it differs
         run: |
           file=keys.json
           cd key_repo
-          echo "Checking if $file exists in both locations..."
-          if [[ -f ../$file ]]; then
-            echo "Old -> $(cat $file 2>/dev/null || echo 'File not found') || New -> $(cat ../$file)"
-            if [[ ! -f $file || "$(cat $file)" != "$(cat ../$file)" ]]; then
-              echo "Keys differ or file missing. Updating/Creating $file..."
-              cp ../$file .
-            else
-              echo "Keys are identical. No update needed."
-            fi
-          else
-            echo "../$file does not exist. Cannot update keys."
+          echo "Old -> $(cat $file) || New -> $(cat ../$file)"
+          if [[ "$(cat $file)" != "$(cat ../$file)" ]]; then
+            cp ../$file .
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add $file
+            git commit --amend -m "chore: Updating key"
+            git push --force
           fi
-
-      - name: Commit and push changes if there are changes
-        run: |
-          cd key_repo
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git add keys.json
-          git commit --allow-empty -m "Update keys.json"
-          git stash
-          git pull --rebase
-          git stash pop || true
-          git add keys.json
-          git commit --allow-empty -m "Update keys.json"
-          git push
-
-      - name: Clean up unnecessary files
-        run: |
-          rm -rf node_modules
-          rm -f package-lock.json
-        if: always() # Ensure cleanup runs even if previous steps fail
