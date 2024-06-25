@@ -13,40 +13,44 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
 
-      - name: Install dependencies
-        run: |
-          echo '{}' > package.json
-          npm install node-fetch@2 webcrack
+    - name: Install dependencies
+      run: |
+        echo '{}' > package.json
+        npm install node-fetch@2 webcrack
+    - name: Run extraction script
+      run: node extractKeys.mjs > keys.json
+      id: extract-keys
 
-      - name: Run extraction script
-        run: node extractKeys.mjs > keys.json
-        id: extract-keys
+    - name: Verify keys.json
+      run: |
+        echo "Content of keys.json after extraction script:"
+        cat keys.json
+      # Debugging step to check the content of keys.json
 
-      - name: Verify keys.json
-        run: |
-          echo "Content of keys.json after extraction script:"
-          cat keys.json
-        # Debugging step to check the content of keys.json
-
-      - name: Commit and push changes
-        run: |
+    - name: Commit and push changes if there are changes
+      run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git add keys.json
-          git diff --cached --quiet || git commit -m "Update keys.json"
+          git commit --allow-empty -m "Update keys.json"
+          git stash
+          git pull --rebase
+          git stash pop || true
+          git add keys.json
+          git commit --allow-empty -m "Update keys.json"
           git push
-        # Add, commit, and push if there are changes
+        # Stash changes, pull latest, apply stash, commit and push
 
-      - name: Clean up unnecessary files
-        run: |
+    - name: Clean up unnecessary files
+      run: |
           rm -rf node_modules
           rm package-lock.json
-        if: always() # Ensure cleanup runs even if previous steps fail
+      if: always() # Ensure cleanup runs even if previous steps fail
