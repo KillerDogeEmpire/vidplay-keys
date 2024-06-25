@@ -75,5 +75,5 @@ jobs:
       - name: Clean up unnecessary files
         run: |
           rm -rf node_modules
-          rm package-lock.json
+          rm -f package-lock.json
         if: always() # Ensure cleanup runs even if previous steps fail
