@@ -41,16 +41,13 @@ jobs:
           ref: keys
           path: key_repo
 
-      - name: Update key if it differs
+      - name: Update key and push changes
         run: |
           file=keys.json
           cd key_repo
-          echo "Old -> $(cat $file) || New -> $(cat ../$file)"
-          if [[ "$(cat $file)" != "$(cat ../$file)" ]]; then
-            cp ../$file .
-            git config --local user.email "github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
-            git add $file
-            git commit --amend -m "chore: Updating key"
-            git push --force
-          fi
+          cp ../$file .
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add $file
+          git commit -m "chore: Updating key"
+          git push
