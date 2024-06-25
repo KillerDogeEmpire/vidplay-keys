@@ -26,7 +26,7 @@ jobs:
         echo '{}' > package.json
         npm install node-fetch@2 webcrack
     - name: Run extraction script
-      run: node extractKeys.mjs > keys.json
+      run: node index.mjs > keys.json
       id: extract-keys
 
     - name: Verify keys.json
