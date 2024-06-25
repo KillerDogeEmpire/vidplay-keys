@@ -45,6 +45,9 @@ jobs:
         run: |
           file=keys.json
           cd key_repo
+          if [ ! -f "$file" ]; then
+            echo "{}" > $file
+          fi
           cp ../$file .
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
